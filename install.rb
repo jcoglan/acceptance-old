@@ -1,1 +1,4 @@
-# Install hook code here
+dir = File.dirname(__FILE__)
+source = "#{dir}/javascripts/acceptance.js"
+target = "#{dir}/../../../public/javascripts/acceptance.js"
+File.copy(source, target)
