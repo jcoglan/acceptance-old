@@ -10,6 +10,7 @@
     <style type="text/css" media="screen">
         .field { border-bottom: 1px solid #ccc; padding: 0 0 12px; margin: 0 0 12px; }
         label { font: bold 13px Arial, sans-serif; }
+        label.invalid { color: #f60; }
     </style>
 </head>
 <body>
@@ -28,6 +29,14 @@
         </div>
         <input type="submit" value="Go on, sign up" />
     </form>
+    
+    <script type="text/javascript" charset="utf-8">
+        Acceptance(function() { with(this) {
+            form('the-form')
+                .requires('username')
+                .requires('email');
+        }});
+    </script>
     
 </body>
 </html>

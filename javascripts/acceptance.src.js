@@ -35,7 +35,7 @@ var Acceptance = (function() {
     //================================================================
     
     var isBlank = function(value) {
-        return value ? false : (String(value).trim() == '');
+        return value ? false : (String(value).strip() == '');
     };
     
     var isNumeric = function(value) {
@@ -44,6 +44,10 @@ var Acceptance = (function() {
     
     var isEmailAddress = function(value) {
         return this.EMAIL_FORMAT.test(String(value));
+    };
+    
+    var isPresent = function(value) {
+        return !isBlank(value) || ['is required'];
     };
     
     var getLabel = function(input) {
@@ -63,7 +67,7 @@ var Acceptance = (function() {
     };
     
     //================================================================
-    // DSL root objects with top-level functions
+    // DSL root object with top-level functions
     //================================================================
     
     var Root = {
@@ -209,6 +213,206 @@ var Acceptance = (function() {
         },
         isValidated: function(block) {
             this._form._dataFilters.push(block);
+        }
+    });
+    
+    //================================================================
+    // Class: FormDescription
+    //================================================================
+    
+    var FormDescription = Class.create({
+        initialize: function(id) {
+            this._observers = [];
+            this._handleSubmission = this._handleSubmission.bindAsEventListener(this);
+            this._formID = id;
+            this._attach();
+            
+            this._requirements = {};
+            this._validators   = [];
+            this._dataFilters  = [];
+            this._dsl    = new FormDSL(this);
+            this._when   = new WhenDSL(this);
+            this._before = new BeforeDSL(this);
+        },
+        subscribe: function(block, context) {
+            this._observers.push({_blk: block, _ctx: context || null});
+        },
+        notifyObservers: function() {
+            var args = $A(arguments);
+            this._observers.each(function(observer) {
+                observer._blk.apply(observer._ctx, args);
+            });
+        },
+        _attach: function() {
+            if (this._hasForm()) return false;
+            this._inputs = {};
+            this._labels = {};
+            this._names = {};
+            this._form = $(this._formID);
+            if (!this._hasForm()) return false;
+            this._form.observe('submit', this._handleSubmission);
+            for (var field in this._requirements) this._requirements[field]._attach();
+            return true;
+        },
+        _hasForm: function() {
+            return this._form && this._form.match('body form');
+        },
+        _getRequirement: function(name) {
+            return this._requirements[name] || (this._requirements[name] = new FormRequirement(this, name));
+        },
+        _handleSubmission: function(evnt) {
+            var valid = this._isValid();
+            if (this._ajax || !valid) Event.stop(evnt);
+            if (!this._ajax || !valid) return;
+            var form = this._form;
+            new Ajax.Request(form.action, {
+                method: form.method || 'post',
+                parameters: this._data,
+                onSuccess: this._handleAjaxResponse
+            });
+        },
+        _handleAjaxResponse: function(response) {},
+        
+        _getInputs: function(name) {
+            if (this._inputs[name]) return this._inputs[name];
+            var selector = ['input', 'textarea', 'select'].map(function(tag) {
+                return tag + (name ? '[name=' + name + ']' : '');
+            }).join(', ');
+            return this._inputs[name] = this._form.descendants().findAll(function(tag) {
+                return tag.match(selector);
+            });
+        },
+        _getLabel: function(name) {
+            if (name.name) name = name.name;
+            return this._labels[name] || ( this._labels[name] = getLabel(this._getInputs(name)[0]) );
+        },
+        _getName: function(field) {
+            if (this._names[field]) return this._names[field];
+            var label = this._getLabel(field);
+            var name = ((label||{}).innerHTML || field).stripTags();
+            
+            name = name.replace(/(\w)[_-](\w)/g, '$1 $2')
+                    .replace(/([a-z])([A-Z])/g, function(match, a, b) {
+                        return a + ' ' + b.toLowerCase();
+                    });
+            
+            return this._names[field] = name.charAt(0).toUpperCase() + name.substring(1);
+        },
+        _getData: function() {
+            return this._data = getData(this._form);
+        },
+        _validate: function() {
+            this._errors = new FormErrors(this);
+            var data = this._getData(), key, input;
+            this._dataFilters.each(function(filter) { filter(data); });
+            // TODO for (key in data) Ojay.Forms.setValue(this._getInputs(key), data[key]);
+            // TODO Ojay.Forms.update();
+            
+            data = new FormData(data);
+            for (key in this._requirements)
+                this._requirements[key]._test(data.get(key), data);
+            
+            this._validators.each(function(validate) { validate(data, this._errors); }, this);
+            
+            var fields = this._errors._fields();
+            for (key in this._inputs)
+                [this._getInputs(key), [this._getLabel(key)]].invoke('each', function(element) {
+                    element[fields.include(key) ? 'addClassName' : 'removeClassName']('invalid');
+                });
+            
+            this.notifyObservers(this);
+        },
+        _isValid: function() {
+            this._validate();
+            return this._errors._count() == 0;
+        }
+    });
+    
+    //================================================================
+    // Class: FormRequirement
+    //================================================================
+    
+    var FormRequirement = Class.create({
+        initialize: function(form, field) {
+            this._form = form;
+            this._field = field;
+            this._tests = [];
+            this._dsl = new RequirementDSL(this);
+            this._attach();
+        },
+        _attach: function() {
+            this._elements = this._form._getInputs(this._field);
+        },
+        _add: function(block) {
+            this._tests.push(block);
+        },
+        _test: function(value, data) {
+            var errors = [], tests = this._tests.length ? this._tests : [isPresent], value = value || '';
+            tests.each(function(block) {
+                var result = block(value, data), message, field;
+                if (result !== true) {
+                    message = result[0]; field = result[1] || this._field;
+                    this._form._errors.register(this._field);
+                    this._form._errors.add(field, message);
+                }
+            }, this);
+            return errors.length ? errors : true;
+        }
+    });
+    
+    //================================================================
+    // Class: FormData
+    //================================================================
+    
+    var FormData = Class.create({
+        initialize: function(data) {
+            this.get = function(field) {
+                return data[field] === undefined ? null : data[field];
+            };
+        }
+    });
+    
+    //================================================================
+    // Class: FormErrors
+    //================================================================
+    
+    var FormErrors = Class.create({
+        initialize: function(form) {
+            var errors = {}, base = [];
+            Object.extend(this, {
+                register: function(field) {
+                    errors[field] = errors[field] || [];
+                },
+                add: function(field, message) {
+                    this.register(field);
+                    errors[field].push(message);
+                },
+                addToBase: function(message) {
+                    base.push(message);
+                },
+                _count: function() {
+                    var n = base.length;
+                    for (var field in errors) n += errors[field].length;
+                    return n;
+                },
+                _messages: function() {
+                    var name, messages = base.map(function(message) {
+                        return {field: null, message: message};
+                    });
+                    for (var field in errors) {
+                        name = form._getName(field);
+                        errors[field].each(function(message) {
+                            messages.push({field: field, message: name + ' ' + message});
+                        });
+                    }
+                    return messages;
+                },
+                _fields: function() {
+                    var fields = [];
+                    for (var field in errors) fields.push(field);
+                    return fields;
+                }
+            });
         }
     });
     
