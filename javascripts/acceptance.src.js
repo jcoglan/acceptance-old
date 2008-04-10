@@ -307,11 +307,9 @@ var Acceptance = (function() {
         _getInputs: function(name) {
             if (this._inputs[name]) return this._inputs[name];
             if (!this._form) return [];
-            var selector = ['input', 'textarea', 'select'].map(function(tag) {
-                return tag + (name ? '[name=' + name + ']' : '');
-            }).join(', ');
             return this._inputs[name] = this._form.descendants().findAll(function(tag) {
-                return tag.match(selector);
+                var isInput = tag.match('input, textarea, select');
+                return isInput && (name ? (tag.name == name) : true);
             });
         },
         _getLabel: function(name) {
