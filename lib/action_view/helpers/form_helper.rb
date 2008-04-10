@@ -4,7 +4,7 @@ module ActionView
       
       def acceptance_form_for(*args, &block)
         form_for(*args, &block)
-        Acceptance.form = nil
+        concat(Acceptance.flush_rules, block.binding)
       end
       
     end
