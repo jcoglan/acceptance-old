@@ -44,7 +44,8 @@ module Acceptance
     end
     
     def message_for(validation)
-      validation[:message].nil? ? '' : ", \"#{validation[:message].inspect[1...-1]}\""
+      message = validation[:options][:message]
+      message.nil? ? '' : ", \"#{message.inspect[1...-1]}\""
     end
     
     def presence_rule(validation)
@@ -52,7 +53,7 @@ module Acceptance
     end
     
     def format_rule(validation)
-      pattern = validation[:format]
+      pattern = validation[:options][:with]
       flags = (pattern.options & Regexp::IGNORECASE).nonzero? ? 'i' : ''
       "#{base_rule(validation)}.toMatch(/#{pattern.source}/#{flags}#{message_for(validation)});"
     end
