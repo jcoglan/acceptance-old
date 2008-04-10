@@ -74,5 +74,21 @@ module Acceptance
       "#{base_rule(validation)}.toMatch(/#{pattern.source}/#{flags}#{message})"
     end
     
+    def length_rule(validation)
+      options = validation[:options]
+      if options[:is]
+        value = options[:is]
+      else
+        range = options[:within] || options[:in]
+        min = range ? range.min : options[:minimum]
+        max = range ? range.max : options[:maximum]
+        value = "{#{[min && "minimum: #{min}", max && "maximum: #{max}"].compact.join(', ')}}"
+      end
+      message = message_for(validation)
+      message = ", #{message}" if message
+      "#{base_rule(validation)}.toHaveLength(#{value}#{message})"
+    end
+    alias :size_rule :length_rule
+    
   end
 end
