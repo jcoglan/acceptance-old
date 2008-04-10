@@ -7,7 +7,7 @@ module ActionView
     private
       define_method(:html_options_for_form) do |*args|
         options = old_html_options_for_form.bind(self).call(*args)
-        Acceptance.set_form(options['id'])
+        Acceptance.form = options['id']
         options
       end
       

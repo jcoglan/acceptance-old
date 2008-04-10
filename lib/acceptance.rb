@@ -2,10 +2,20 @@ module Acceptance
   class << self
   
     @form_id = nil
+    @object = nil
     
-    def set_form(id)
+    def form=(id)
       @form_id = id.nil? ? nil : id.to_s
-      puts "\n\nForm id: #{@form_id}\n\n"
+      object = nil if @form_id.nil?
+    end
+    
+    def has_form?
+      !(@form_id.nil? or @form_id.to_s.empty?)
+    end
+    
+    def object=(object)
+      @object = object
+      puts "\n\n#{object.inspect}\n\n"
     end
   
   end

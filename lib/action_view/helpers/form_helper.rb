@@ -4,7 +4,7 @@ module ActionView
       
       def acceptance_form_for(*args, &block)
         form_for(*args, &block)
-        Acceptance.set_form(nil)
+        Acceptance.form = nil
       end
       
     end
