@@ -26,7 +26,7 @@ module Acceptance
       return "" unless has_form? and @object
       rules = @fields.map { |field|
         validations = @object.class.acceptance_rules.find_all { |r| r[:name] == field }
-        validations.map { |v| "form('#{@form_id}').requires('#{@object_name}[#{field}]');" }
+        validations.map { |v| __send__("#{v[:type]}_rule", v) }
       }.flatten
       form = nil
       <<-EOS
@@ -37,6 +37,10 @@ module Acceptance
         }});
       </script>
       EOS
+    end
+    
+    def presence_rule(validation)
+      "form('#{@form_id}').requires('#{@object_name}[#{validation[:name]}]');"
     end
   
   end
