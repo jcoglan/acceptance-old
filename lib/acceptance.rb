@@ -39,8 +39,22 @@ module Acceptance
       EOS
     end
     
+    def base_rule(validation)
+      "form('#{@form_id}').requires('#{@object_name}[#{validation[:name]}]')"
+    end
+    
+    def message_for(validation)
+      validation[:message].nil? ? '' : ", \"#{validation[:message].inspect[1...-1]}\""
+    end
+    
     def presence_rule(validation)
-      "form('#{@form_id}').requires('#{@object_name}[#{validation[:name]}]');"
+      "#{base_rule(validation)};"
+    end
+    
+    def format_rule(validation)
+      pattern = validation[:format]
+      flags = (pattern.options & Regexp::IGNORECASE).nonzero? ? 'i' : ''
+      "#{base_rule(validation)}.toMatch(/#{pattern.source}/#{flags}#{message_for(validation)});"
     end
   
   end
