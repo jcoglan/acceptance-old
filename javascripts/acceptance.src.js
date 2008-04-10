@@ -105,6 +105,12 @@ var Acceptance = (function() {
         before: function(id) {
             return getForm(id)._before || null;
         },
+        displayErrorsIn: function() {
+            // TODO
+        },
+        displayResponseIn: function() {
+            // TODO
+        },
         EMAIL_FORMAT: EMAIL_FORMAT
     };
     
