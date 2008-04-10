@@ -6,11 +6,24 @@
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
   <title>Acceptance ActionView test</title>
   <%= javascript_include_tag 'prototype', 'acceptance' %>
+  <style type="text/css" media="screen">
+    .field { border-bottom: 1px solid #ccc; padding: 0 0 12px; margin: 0 0 12px; }
+    label { font: bold 13px Arial, sans-serif; }
+    label.invalid { color: #f60; }
+  </style>
 </head>
 <body id="acceptance" onload="">
   
-  <% acceptance_form_for(@user) do %>
-  
+  <% acceptance_form_for(@user) do |f| %>
+    <div class="field">
+      <%= f.label(:username) %>
+      <%= f.text_field(:username) %>
+    </div>
+    <div class="field">
+      <%= f.label(:email) %>
+      <%= f.text_field(:email) %>
+    </div>
+    <%= submit_tag('Go!') %>
   <% end %>
   
 </body>

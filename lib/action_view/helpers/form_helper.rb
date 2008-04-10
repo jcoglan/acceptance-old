@@ -3,8 +3,8 @@ module ActionView
     module FormHelper
       
       def acceptance_form_for(*args, &block)
-        puts "\n\nHijacked!!\n\n"
         form_for(*args, &block)
+        Acceptance.set_form(nil)
       end
       
     end
