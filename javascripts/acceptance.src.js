@@ -42,28 +42,53 @@ var Acceptance = (function() {
         return NUMBER_FORMAT.test(String(value));
     };
     
-    var isEmailAddress = function(value) {
-        return this.EMAIL_FORMAT.test(String(value));
-    };
-    
     var isPresent = function(value) {
         return !isBlank(value) || ['is required'];
     };
     
     var getLabel = function(input) {
-        var label = $(input).ancestors().find(function(tag) { return tag.match('label') });
+        input = $(input);
+        if (!input) return null;
+        var label = input.ancestors().find(function(tag) { return tag.match('label') });
         if (label) return label;
         var id = input.id;
         if (!id) return null;
         return $$('label[for=' + id + ']')[0] || null;
     };
     
-    var getQueryString = function(form) {
-        return $(form).serialize();
-    };
-    
     var getData = function(form) {
         return $(form).serialize(true);
+    };
+    
+    var setValue = function(elements, value) {
+        var selected, options, element = elements[0];
+        switch (true) {
+            
+            case elements.all(function(e) { return e.match('[type=radio]') }) :
+                selected = elements.find(function(e) { return e.value == value });
+                if (!selected) return;
+                elements.each(function(e) { e.checked = false });
+                selected.checked = true;
+                break;
+            
+            case element.match('[type=checkbox]') :
+                element.checked = !!value;
+                break;
+            
+            case element.match('select') :
+                options = $A(element.options);
+                selected = options.find(function(o) { return o.value == value });
+                if (!selected) return;
+                options.each(function(o) { o.selected = false });
+                selected.selected = true;
+                break;
+            
+            case element.match('input') :
+            case element.match('[type=hidden]') :
+            case element.match('textarea') :
+                element.value = String(value);
+                break;
+        }
     };
     
     //================================================================
@@ -275,6 +300,7 @@ var Acceptance = (function() {
         
         _getInputs: function(name) {
             if (this._inputs[name]) return this._inputs[name];
+            if (!this._form) return [];
             var selector = ['input', 'textarea', 'select'].map(function(tag) {
                 return tag + (name ? '[name=' + name + ']' : '');
             }).join(', ');
@@ -289,7 +315,7 @@ var Acceptance = (function() {
         _getName: function(field) {
             if (this._names[field]) return this._names[field];
             var label = this._getLabel(field);
-            var name = ((label||{}).innerHTML || field).stripTags();
+            var name = ((label||{}).innerHTML || field).stripTags().strip();
             
             name = name.replace(/(\w)[_-](\w)/g, '$1 $2')
                     .replace(/([a-z])([A-Z])/g, function(match, a, b) {
@@ -305,8 +331,7 @@ var Acceptance = (function() {
             this._errors = new FormErrors(this);
             var data = this._getData(), key, input;
             this._dataFilters.each(function(filter) { filter(data); });
-            // TODO for (key in data) Ojay.Forms.setValue(this._getInputs(key), data[key]);
-            // TODO Ojay.Forms.update();
+            for (key in data) setValue(this._getInputs(key), data[key]);
             
             data = new FormData(data);
             for (key in this._requirements)
@@ -317,6 +342,7 @@ var Acceptance = (function() {
             var fields = this._errors._fields();
             for (key in this._inputs)
                 [this._getInputs(key), [this._getLabel(key)]].invoke('each', function(element) {
+                    if (!element) return;
                     element[fields.include(key) ? 'addClassName' : 'removeClassName']('invalid');
                 });
             

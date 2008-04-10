@@ -17,6 +17,23 @@
     
     <h1>Acceptance client-side tests</h1>
     
+    <script type="text/javascript" charset="utf-8">
+        Acceptance(function() { with(this) {
+            
+            form('the-form')
+                .requires('username')
+                .requires('email');
+            
+            before('the-form').isValidated(function(data) {
+                data.username = data.username.toUpperCase();
+            });
+            
+            when('the-form').isValidated(function(errors) {
+                window.console && console.log(errors.pluck('message'));
+            });
+        }});
+    </script>
+    
     <form id="the-form" action="" method="get" accept-charset="utf-8">
         <div class="field">
             <label for="username">Your username</label>
@@ -31,11 +48,7 @@
     </form>
     
     <script type="text/javascript" charset="utf-8">
-        Acceptance(function() { with(this) {
-            form('the-form')
-                .requires('username')
-                .requires('email');
-        }});
+        Acceptance.reattach();
     </script>
     
 </body>
