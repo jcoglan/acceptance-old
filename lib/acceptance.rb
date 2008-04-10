@@ -1,6 +1,6 @@
 module Acceptance
   class << self
-  
+    
     @form_id = nil
     @object = nil
     
@@ -33,30 +33,46 @@ module Acceptance
       
       <script type="text/javascript">
         if (window.Acceptance) Acceptance(function() { with(this) {
-          #{rules.join("\n          ")}
+          form('#{@form_id}')
+              .#{rules.join("\n              .")};
         }});
       </script>
       EOS
     end
     
+  private
+    
     def base_rule(validation)
-      "form('#{@form_id}').requires('#{@object_name}[#{validation[:name]}]')"
+      "requires('#{@object_name}[#{validation[:name]}]')"
     end
     
     def message_for(validation)
       message = validation[:options][:message]
-      message.nil? ? '' : ", \"#{message.inspect[1...-1]}\""
+      message.nil? ? nil : "\"#{message.inspect[1...-1]}\""
     end
     
     def presence_rule(validation)
-      "#{base_rule(validation)};"
+      "#{base_rule(validation)}"
+    end
+    
+    def acceptance_rule(validation)
+      "#{base_rule(validation)}.toBeChecked(#{message_for(validation)})"
+    end
+    
+    def confirmation_rule(validation)
+      message = message_for(validation)
+      message = ", #{message}" if message
+      v = validation
+      "requires('#{@object_name}[#{v[:name]}_confirmation]').toConfirm('#{@object_name}[#{v[:name]}]'#{message})"
     end
     
     def format_rule(validation)
       pattern = validation[:options][:with]
       flags = (pattern.options & Regexp::IGNORECASE).nonzero? ? 'i' : ''
-      "#{base_rule(validation)}.toMatch(/#{pattern.source}/#{flags}#{message_for(validation)});"
+      message = message_for(validation)
+      message = ", #{message}" if message
+      "#{base_rule(validation)}.toMatch(/#{pattern.source}/#{flags}#{message})"
     end
-  
+    
   end
 end

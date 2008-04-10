@@ -14,14 +14,18 @@
 </head>
 <body id="acceptance" onload="">
   
-  <% acceptance_form_for(@user) do |f| %>
+  <% acceptance_form_for(:user, @user, :html => {:id => 'the-form'}, :url => {:action => :create}) do |f| %>
     <div class="field">
-      <%= f.label(:username) %>
-      <%= f.text_field(:username) %>
+      <%= f.label(:username) %> <%= f.text_field(:username) %>
     </div>
     <div class="field">
-      <%= f.label(:email) %>
-      <%= f.text_field(:email) %>
+      <%= f.label(:email) %> <%= f.text_field(:email) %>
+    </div>
+    <div class="field">
+      <%= f.label(:email_confirmation) %> <%= f.text_field(:email_confirmation) %>
+    </div>
+    <div class="field">
+      <%= f.label(:terms) %> <%= f.check_box(:terms) %>
     </div>
     <%= submit_tag('Go!') %>
   <% end %>

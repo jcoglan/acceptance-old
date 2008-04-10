@@ -57,7 +57,11 @@ var Acceptance = (function() {
     };
     
     var getData = function(form) {
-        return $(form).serialize(true);
+        var data = $(form).serialize(true);
+        for (var key in data) {
+            if (data[key] instanceof Array) data[key] = data[key][0];
+        }
+        return data;
     };
     
     var setValue = function(elements, value) {
@@ -72,7 +76,7 @@ var Acceptance = (function() {
                 break;
             
             case element.match('[type=checkbox]') :
-                element.checked = !!value;
+                element.checked = !!(value === true || value == element.value);
                 break;
             
             case element.match('select') :
