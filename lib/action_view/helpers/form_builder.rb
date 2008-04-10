@@ -4,7 +4,7 @@ module ActionView
       
       old_initialize = instance_method(:initialize)
       define_method(:initialize) do |object_name, object, template, options, proc|
-        Acceptance.object = object
+        Acceptance.set_object(object, object_name)
         old_initialize.bind(self).call(object_name, object, template, options, proc)
       end
       

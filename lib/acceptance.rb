@@ -6,15 +6,15 @@ module Acceptance
     
     def form=(id)
       @form_id = id.nil? ? nil : id.to_s
-      object = nil if @form_id.nil?
+      set_object(nil) if @form_id.nil?
     end
     
     def has_form?
       !(@form_id.nil? or @form_id.to_s.empty?)
     end
     
-    def object=(object)
-      @object = object
+    def set_object(object, name = nil)
+      @object, @object_name = object, name
       @fields = [] if object
     end
     
@@ -26,7 +26,7 @@ module Acceptance
       return "" unless has_form? and @object
       rules = @fields.map { |field|
         validations = @object.class.acceptance_rules.find_all { |r| r[:name] == field }
-        validations.map { |v| "form('#{@form_id}').requires('#{field}');" }
+        validations.map { |v| "form('#{@form_id}').requires('#{@object_name}[#{field}]');" }
       }.flatten
       form = nil
       <<-EOS
