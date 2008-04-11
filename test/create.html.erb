@@ -30,5 +30,11 @@
     <%= submit_tag('Go!') %>
   <% end %>
   
+  <% acceptance_form_for(:another_user, @user, :html => {:id => 'the-second-form'}, :url => {:action => :create}) do |f| %>
+    <div class="field">
+      <%= f.label(:username) %> <%= f.text_field(:username) %>
+    </div>
+  <% end %>
+  
 </body>
 </html>
