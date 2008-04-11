@@ -35,12 +35,12 @@ any fields in the form that can be checked client-side without making a server r
 
 The following validation types are supported, with a few limitations:
 
-  vaidates_acceptance_of
-  vaidates_confirmation_of
-  vaidates_exclusion_of
-  vaidates_format_of
-  vaidates_inclusion_of
-  vaidates_length_of
-  vaidates_numericality_of
-  vaidates_presence_of
-  vaidates_size_of
+  validates_acceptance_of
+  validates_confirmation_of
+  validates_exclusion_of
+  validates_format_of
+  validates_inclusion_of
+  validates_length_of
+  validates_numericality_of
+  validates_presence_of
+  validates_size_of
