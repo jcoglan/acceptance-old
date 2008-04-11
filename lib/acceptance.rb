@@ -1,8 +1,20 @@
 module Acceptance
   class << self
     
-    @form_id = nil
-    @object = nil
+    ADAPTERS = {
+      :prototype    => ['window.Acceptance', 'Acceptance'],
+      :ojay         => ['window.Ojay', 'Ojay.Forms']
+    }
+    
+    def adapter=(library)
+      library = library.to_sym
+      return nil unless ADAPTERS.keys.include?(library)
+      @chosen_adapter = library
+    end
+    
+    def adapter
+      @chosen_adapter || :prototype
+    end
     
     def form=(id)
       @form_id = id.nil? ? nil : id.to_s
@@ -24,6 +36,7 @@ module Acceptance
     
     def flush_rules
       return "" unless has_form? and @object
+      puts @adapters.inspect
       rules = @fields.map { |field|
         validations = @object.class.acceptance_rules.find_all { |r| r[:name] == field }
         validations.map { |v| __send__("#{v[:type]}_rule", v) }
@@ -32,7 +45,7 @@ module Acceptance
       <<-EOS
       
       <script type="text/javascript">
-        if (window.Acceptance) Acceptance(function() { with(this) {
+        if (#{ADAPTERS[adapter].first}) #{ADAPTERS[adapter].last}(function() { with(this) {
           form('#{@form_id}')
               .#{rules.join("\n              .")};
         }});
