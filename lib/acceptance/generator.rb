@@ -10,13 +10,13 @@ module Acceptance
         }.flatten
         
         <<-EOS
-        
-        <script type="text/javascript">
-        if (#{adapter.first}) #{adapter.last}(function() { with(this) {
-            form('#{form}')
-                .#{rules.compact.join("\n                .")};
-        }});
-        </script>
+
+<script type="text/javascript">
+if (#{adapter.first}) #{adapter.last}(function() { with(this) {
+    form('#{form}')
+        .#{rules.compact.join("\n        .")};
+}});
+</script>
         EOS
       end
       
