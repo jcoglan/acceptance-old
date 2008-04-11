@@ -18,7 +18,10 @@ when using the API. All the other function calls are identical. For example:
       .expects('email_confirmation').toConfirm('email');
   }});
 
-Refer to the Ojay site for the rest of the API.
+Refer to the Ojay site for the rest of the API. You can use this plugin with the original Ojay
+client-side library by putting this in your environment.rb:
+
+  Acceptance.adapter = :ojay
 
 To have Acceptance generate client-side code for you, simply replace any calls to +form_for+
 with +acceptance_form_for+. A script tag will be added after the form containing rules for
