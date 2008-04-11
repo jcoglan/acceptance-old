@@ -2,6 +2,7 @@ require 'rake'
 require 'rake/testtask'
 require 'rake/rdoctask'
 require 'packr'
+require 'fileutils'
 
 desc 'Default: run unit tests.'
 task :default => :test
@@ -27,4 +28,5 @@ task :build do
   code = File.read('javascripts/acceptance.src.js')
   code = Packr.pack(code, :shrink_vars => true, :private => true)
   File.open('javascripts/acceptance.js', 'wb') { |f| f.write code }
+  FileUtils.copy('javascripts/acceptance.js', '../../../public/javascripts/acceptance.js')
 end

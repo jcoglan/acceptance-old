@@ -8,20 +8,22 @@ var Acceptance = (function() {
         rules.apply(Root);
     };
     
+    environment.reattach = function() {
+        var n = 0;
+        for (var key in forms) {
+            if (forms[key]._attach()) ++n;
+        }
+        return n;
+    };
+    
+    //================================================================
+    // Storage of all registered sets of form rules
+    //================================================================
+    
     var forms = {};
     var getForm = function(id) {
         return forms[id] || (forms[id] = new FormDescription(id));
     };
-    
-    Object.extend(environment, {
-        reattach: function() {
-            var n = 0;
-            for (var key in forms) {
-                if (forms[key]._attach()) ++n;
-            }
-            return n;
-        }
-    });
     
     //================================================================
     // Constants
@@ -43,7 +45,7 @@ var Acceptance = (function() {
     };
     
     var isPresent = function(value) {
-        return !isBlank(value) || ['is required'];
+        return !isBlank(value) || ['may not be blank'];
     };
     
     var getLabel = function(input) {
@@ -109,11 +111,28 @@ var Acceptance = (function() {
         before: function(id) {
             return getForm(id)._before || null;
         },
-        displayErrorsIn: function() {
-            // TODO
+        displayErrorsIn: function(element) {
+            return function(errors) {
+                if (typeof element == 'string') element = $$(element)[0];
+                if (!element) return;
+                var n = errors.length;
+                if (n == 0) return element.update('');
+                var were = (n == 1) ? 'was' : 'were', s = (n == 1) ? '' : 's';
+                var content = '<div class="error-explanation">';
+                content += '<p>There ' + were + ' ' + n + ' error' + s + ' with the form</p>';
+                content += '<ul>';
+                errors.each(function(error) { content += '<li>' + error.message + '</li>' });
+                content += '</ul>';
+                content += '</div>';
+                element.update(content);
+            };
         },
-        displayResponseIn: function() {
-            // TODO
+        displayResponseIn: function(element) {
+            return function(response) {
+                if (typeof element == 'string') element = $$(element)[0];
+                if (!element) return;
+                element.update(response.responseText);
+            };
         },
         EMAIL_FORMAT: EMAIL_FORMAT
     };
@@ -128,7 +147,7 @@ var Acceptance = (function() {
         },
         requires: function(name, displayed) {
             var requirement = this._form._getRequirement(name);
-            if (displayed) this._form._names[name] = displayed;
+            if (displayed) this._form._displayNames[name] = displayed;
             return requirement._dsl;
         },
         validates: function(block) {
@@ -168,6 +187,12 @@ var Acceptance = (function() {
         toBeOneOf: function(list, message) {
             this._requirement._add(function(value) {
                 return list.include(value) || [message || 'is not valid'];
+            });
+            return this;
+        },
+        toBeNoneOf: function(list, message) {
+            this._requirement._add(function(value) {
+                return !list.include(value) || [message || 'is not valid'];
             });
             return this;
         },
@@ -234,7 +259,7 @@ var Acceptance = (function() {
         responseArrives: function(block, context) {
             if (!this._form._ajax) return;
             if (context) block = block.bind(context);
-            this._form._handleAjaxResponse = block;
+            this._form._ajaxResponders.push(block);
         }
     });
     
@@ -260,11 +285,13 @@ var Acceptance = (function() {
             this._observers = [];
             this._handleSubmission = this._handleSubmission.bindAsEventListener(this);
             this._formID = id;
+            this._displayNames = {};
             this._attach();
             
-            this._requirements = {};
-            this._validators   = [];
-            this._dataFilters  = [];
+            this._requirements   = {};
+            this._validators     = [];
+            this._dataFilters    = [];
+            this._ajaxResponders = [];
             this._dsl    = new FormDSL(this);
             this._when   = new WhenDSL(this);
             this._before = new BeforeDSL(this);
@@ -282,7 +309,7 @@ var Acceptance = (function() {
             if (this._hasForm()) return false;
             this._inputs = {};
             this._labels = {};
-            this._names = {};
+            this._names  = {};
             this._form = $(this._formID);
             if (!this._hasForm()) return false;
             this._form.observe('submit', this._handleSubmission);
@@ -303,11 +330,11 @@ var Acceptance = (function() {
             new Ajax.Request(form.action, {
                 method: form.method || 'post',
                 parameters: this._data,
-                onSuccess: this._handleAjaxResponse
+                onSuccess: function(response) {
+                    this._ajaxResponders.each(function(block) { block(response) });
+                }.bind(this)
             });
         },
-        _handleAjaxResponse: function(response) {},
-        
         _getInputs: function(name) {
             if (this._inputs[name]) return this._inputs[name];
             if (!this._form) return [];
@@ -322,6 +349,7 @@ var Acceptance = (function() {
         },
         _getName: function(field) {
             if (this._names[field]) return this._names[field];
+            if (this._displayNames[field]) return this._names[field] = this._displayNames[field];
             var label = this._getLabel(field);
             var name = ((label||{}).innerHTML || field).stripTags().strip();
             
@@ -338,6 +366,7 @@ var Acceptance = (function() {
         _validate: function() {
             this._errors = new FormErrors(this);
             var data = this._getData(), key, input;
+            
             this._dataFilters.each(function(filter) { filter(data); });
             for (key in data) setValue(this._getInputs(key), data[key]);
             
