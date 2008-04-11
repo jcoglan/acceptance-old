@@ -257,7 +257,6 @@ var Acceptance = (function() {
             });
         },
         responseArrives: function(block, context) {
-            if (!this._form._ajax) return;
             if (context) block = block.bind(context);
             this._form._ajaxResponders.push(block);
         }

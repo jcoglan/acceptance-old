@@ -46,8 +46,8 @@ module Acceptance
       
       <script type="text/javascript">
         if (#{ADAPTERS[adapter].first}) #{ADAPTERS[adapter].last}(function() { with(this) {
-          form('#{@form_id}')
-              .#{rules.join("\n              .")};
+            form('#{@form_id}')
+                .#{rules.join("\n                .")};
         }});
       </script>
       EOS
