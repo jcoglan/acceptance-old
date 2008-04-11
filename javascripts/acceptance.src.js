@@ -45,7 +45,7 @@ var Acceptance = (function() {
     };
     
     var isPresent = function(value) {
-        return !isBlank(value) || ['may not be blank'];
+        return !isBlank(value) || ['must not be blank'];
     };
     
     var getLabel = function(input) {
@@ -193,6 +193,12 @@ var Acceptance = (function() {
         toBeNoneOf: function(list, message) {
             this._requirement._add(function(value) {
                 return !list.include(value) || [message || 'is not valid'];
+            });
+            return this;
+        },
+        toBePresent: function(message) {
+            this._requirement._add(function(value) {
+                return !isBlank(value) || [message || 'must not be blank'];
             });
             return this;
         },
