@@ -119,7 +119,7 @@ var Acceptance = (function() {
                 if (n == 0) return element.update('');
                 var were = (n == 1) ? 'was' : 'were', s = (n == 1) ? '' : 's';
                 var content = '<div class="error-explanation">';
-                content += '<p>There ' + were + ' ' + n + ' error' + s + ' with the form</p>';
+                content += '<p>There ' + were + ' ' + n + ' error' + s + ' with the form:</p>';
                 content += '<ul>';
                 errors.each(function(error) { content += '<li>' + error.message + '</li>' });
                 content += '</ul>';
@@ -453,7 +453,7 @@ var Acceptance = (function() {
                 },
                 add: function(field, message) {
                     this.register(field);
-                    errors[field].push(message);
+                    if (!errors[field].include(message)) errors[field].push(message);
                 },
                 addToBase: function(message) {
                     base.push(message);

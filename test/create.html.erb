@@ -7,34 +7,53 @@
   <title>Acceptance ActionView test</title>
   <%= javascript_include_tag 'prototype', 'acceptance' %>
   <style type="text/css" media="screen">
-    .field { border-bottom: 1px solid #ccc; padding: 0 0 12px; margin: 0 0 12px; }
-    label { font: bold 13px Arial, sans-serif; }
+    form .field {
+        border-bottom:  1px solid #eee;
+        clear:          left;
+        margin-bottom:  4px;
+        padding-bottom: 8px;
+    }
+    
+    label, .label {
+        float:          left;
+        font-weight:    bold;
+        margin-right:   20px;
+        width:          180px;
+    }
+    
     label.invalid { color: #f60; }
+    .error-message {
+        color:          #999;
+        font-size:      11px;
+        font-style:     italic;
+        font-weight:    normal;
+        margin:         4px 0 0 140px;
+    }
+    
+    input.text { width: 240px; }
+    input.submit { margin-left: 140px; }
+    input.invalid { background: #fec; }
   </style>
 </head>
 <body id="acceptance" onload="">
   
+  <h1>Acceptance integration tests</h1>
+  
+  <div id="results"></div>
   <% acceptance_form_for(:user, @user, :html => {:id => 'the-form'}, :url => {:action => :create}) do |f| %>
-    <div class="field">
-      <%= f.label(:username) %> <%= f.text_field(:username) %>
-    </div>
-    <div class="field">
-      <%= f.label(:email) %> <%= f.text_field(:email) %>
-    </div>
-    <div class="field">
-      <%= f.label(:email_confirmation) %> <%= f.text_field(:email_confirmation) %>
-    </div>
-    <div class="field">
-      <%= f.label(:terms) %> <%= f.check_box(:terms) %>
-    </div>
-    <%= submit_tag('Go!') %>
+    <div class="field"><%= f.label(:username) %> <%= f.text_field(:username) %></div>
+    <div class="field"><%= f.label(:email) %> <%= f.text_field(:email) %></div>
+    <div class="field"><span class="label">Confirm email</span> <%= f.text_field(:email_confirmation) %></div>
+    <div class="field"><%= f.label(:age) %> <%= f.text_field(:age) %></div>
+    <div class="field"><%= f.label(:terms) %> <%= f.check_box(:terms) %></div>
+    <%= submit_tag('Save') %>
   <% end %>
   
-  <% acceptance_form_for(:another_user, @user, :html => {:id => 'the-second-form'}, :url => {:action => :create}) do |f| %>
-    <div class="field">
-      <%= f.label(:username) %> <%= f.text_field(:username) %>
-    </div>
-  <% end %>
+  <script type="text/javascript">
+    Acceptance(function() { with(this) {
+      when('the-form').isValidated(displayErrorsIn('#results'));
+    }});
+  </script>
   
 </body>
 </html>
