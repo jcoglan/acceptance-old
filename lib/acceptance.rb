@@ -150,15 +150,16 @@ module Acceptance
       name      = field_for(validation)
       o         = validation[:options]
       validator = validator_for(validation)
+      error     = "errors.add(#{name}#{message}) })"
       
-      rules << "#{validator} % 1 != 0) errors.add(#{name}#{message}) })" if o[:only_integer]
-      rules << "#{validator} <= #{o[:greater_than]}) errors.add(#{name}#{message}) })" if o[:greater_than]
-      rules << "#{validator} < #{o[:greater_than_or_equal_to]}) errors.add(#{name}#{message}) })" if o[:greater_than_or_equal_to]
-      rules << "#{validator} >= #{o[:less_than]}) errors.add(#{name}#{message}) })" if o[:less_than]
-      rules << "#{validator} > #{o[:less_than_or_equal_to]}) errors.add(#{name}#{message}) })" if o[:less_than_or_equal_to]
-      rules << "#{validator} != #{o[:equal_to]}) errors.add(#{name}#{message}) })" if o[:equal_to]
-      rules << "#{validator} % 2 == 0) errors.add(#{name}#{message}) })" if o[:odd]
-      rules << "#{validator} % 2 == 1) errors.add(#{name}#{message}) })" if o[:even]
+      rules << "#{validator} % 1 != 0) #{error}"                          if o[:only_integer]
+      rules << "#{validator} <= #{o[:greater_than]}) #{error}"            if o[:greater_than]
+      rules << "#{validator} < #{o[:greater_than_or_equal_to]}) #{error}" if o[:greater_than_or_equal_to]
+      rules << "#{validator} >= #{o[:less_than]}) #{error}"               if o[:less_than]
+      rules << "#{validator} > #{o[:less_than_or_equal_to]}) #{error}"    if o[:less_than_or_equal_to]
+      rules << "#{validator} != #{o[:equal_to]}) #{error}"                if o[:equal_to]
+      rules << "#{validator} % 2 == 0) #{error}"                          if o[:odd]
+      rules << "#{validator} % 2 == 1) #{error}"                          if o[:even]
       
       rules
     end
