@@ -43,4 +43,4 @@ The following validation types are supported, with a few limitations:
   vaidates_length_of
   vaidates_numericality_of
   vaidates_presence_of
-  vaidates_size
+  vaidates_size_of
