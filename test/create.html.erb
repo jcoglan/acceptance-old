@@ -52,6 +52,9 @@
   <script type="text/javascript">
     Acceptance(function() { with(this) {
       when('the-form').isValidated(displayErrorsIn('#results'));
+      
+      form('the-form').submitsUsingAjax();
+      when('the-form').responseArrives(displayResponseIn('#results'));
     }});
   </script>
   

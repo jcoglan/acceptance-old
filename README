@@ -1,13 +1,43 @@
-Acceptance
-==========
+== Acceptance
 
-Introduction goes here.
+Copyright (c) 2008 James Coglan, released under the MIT license
 
+Acceptance is a port of the Ojay.Forms validation API to work with the Prototype library. This
+plugin provides hooks into your Rails application that can automatically generate client-side
+validation code from your Rails models. Information on the client-side API can be found at
+the Ojay project site:
 
-Example
-=======
+  http://ojay.othermedia.org/articles/forms.html
 
-Example goes here.
+The only difference here is that you need to call <tt>Acceptance()</tt> instead of <tt>Ojay.Forms()</tt>
+when using the API. All the other function calls are identical. For example:
 
+  Acceptance(function() { with(this) {
+    form('the-form')
+      .requires('username').toHaveLength({minimum: 6})
+      .expects('email_confirmation').toConfirm('email');
+  }});
 
-Copyright (c) 2008 [name of plugin creator], released under the MIT license
+Refer to the Ojay site for the rest of the API.
+
+To have Acceptance generate client-side code for you, simply replace any calls to +form_for+
+with +acceptance_form_for+. A script tag will be added after the form containing rules for
+any fields in the form that can be checked client-side without making a server request.
+
+  # Before
+  <% form_for(@user) do |f| %> ... <% end %>
+  
+  # After
+  <% acceptance_form_for(@user) do |f| %> ... <% end %>
+
+The following validation types are supported, with a few limitations:
+
+  vaidates_acceptance_of
+  vaidates_confirmation_of
+  vaidates_exclusion_of
+  vaidates_format_of
+  vaidates_inclusion_of
+  vaidates_length_of
+  vaidates_numericality_of
+  vaidates_presence_of
+  vaidates_size
