@@ -6,6 +6,53 @@
   <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
   <title>Acceptance ActionView test</title>
   <%= javascript_include_tag 'prototype', 'acceptance' %>
+</head>
+<body id="acceptance" onload="">
+  
+  <h1>Acceptance integration tests</h1>
+  
+  <div id="results"></div>
+  <% acceptance_form_for(:user, @user, :html => {:id => 'the-form'}, :url => {:action => :create}) do |f| %>
+    <div class="field"><%= f.label(:username) %> <%= f.text_field(:username) %></div>
+    <div class="field"><%= f.label(:email) %> <%= f.text_field(:email) %></div>
+    <div class="field"><span class="label">Confirm email</span> <%= f.text_field(:email_confirmation) %></div>
+    <div class="field"><%= f.label(:age) %> <%= f.text_field(:age) %></div>
+    <div class="field"><%= f.label(:terms) %> <%= f.check_box(:terms) %></div>
+    <%= submit_tag('Save') %>
+  <% end %>
+  
+  <script type="text/javascript">
+    Acceptance(function() { with(this) {
+      when('the-form').isValidated(displayErrorsIn('#results'));
+      
+      form('the-form').submitsUsingAjax();
+      when('the-form').responseArrives(displayResponseIn('#results'));
+    }});
+  </script>
+  
+  <% form_tag({:action => :create}, :id => 'second-form') do %>
+    <% acceptance_fields_for(:third, @third) do |f| %>
+      <div class="field"><%= f.label(:username) %> <%= f.text_field(:username) %></div>
+    <% end %>
+  <% end %>
+  
+  <% form_tag({:action => :create}, :id => 'final-form') do %>
+    <% acceptance_fields_for(:fourth, @fourth) do |f| %>
+      <div class="field"><%= f.label(:email) %> <%= f.text_field(:email) %></div>
+      <div class="field"><span class="label">Confirm email</span> <%= f.text_field(:email_confirmation) %></div>
+    <% end %>
+    <% acceptance_fields_for(:another, @another) do |f| %>
+      <div class="field"><%= f.label(:age) %> <%= f.text_field(:age) %></div>
+      <div class="field"><%= f.label(:terms) %> <%= f.check_box(:terms) %></div>
+    <% end %>
+  <% end %>
+  
+  <% form_tag(:action => :create) do %>
+    <% acceptance_fields_for(:other, @other) do |f| %>
+      <div class="field"><%= f.label(:username) %> <%= f.text_field(:username) %></div>
+    <% end %>
+  <% end %>
+  
   <style type="text/css" media="screen">
     form .field {
         border-bottom:  1px solid #eee;
@@ -34,29 +81,6 @@
     input.submit { margin-left: 140px; }
     input.invalid { background: #fec; }
   </style>
-</head>
-<body id="acceptance" onload="">
-  
-  <h1>Acceptance integration tests</h1>
-  
-  <div id="results"></div>
-  <% acceptance_form_for(:user, @user, :html => {:id => 'the-form'}, :url => {:action => :create}) do |f| %>
-    <div class="field"><%= f.label(:username) %> <%= f.text_field(:username) %></div>
-    <div class="field"><%= f.label(:email) %> <%= f.text_field(:email) %></div>
-    <div class="field"><span class="label">Confirm email</span> <%= f.text_field(:email_confirmation) %></div>
-    <div class="field"><%= f.label(:age) %> <%= f.text_field(:age) %></div>
-    <div class="field"><%= f.label(:terms) %> <%= f.check_box(:terms) %></div>
-    <%= submit_tag('Save') %>
-  <% end %>
-  
-  <script type="text/javascript">
-    Acceptance(function() { with(this) {
-      when('the-form').isValidated(displayErrorsIn('#results'));
-      
-      form('the-form').submitsUsingAjax();
-      when('the-form').responseArrives(displayResponseIn('#results'));
-    }});
-  </script>
   
 </body>
 </html>

@@ -38,7 +38,6 @@ module Acceptance
     
     def flush_rules
       return "" unless has_form? and @object
-      form = nil
       Generator.generate_script(@form_id, @object, @object_name, @fields, ADAPTERS[adapter])
     end
     
